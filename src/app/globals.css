@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-parchment text-ink antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  ::selection {
+    @apply bg-rosewood/20;
+  }
+  :focus-visible {
+    outline: 2px solid #8C3B4A;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-rosewood;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-rosewood px-6 py-3 text-sm font-medium text-parchment transition hover:bg-ink disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 border border-ink/20 bg-transparent px-6 py-3 text-sm font-medium text-ink transition hover:border-ink hover:bg-ink hover:text-parchment disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1 text-sm font-medium text-rosewood underline-offset-4 hover:underline;
+  }
+  .card {
+    @apply border border-line bg-white/60 shadow-card;
+  }
+  .input-field {
+    @apply w-full border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/40 focus:border-rosewood focus:outline-none;
+  }
+  .label-field {
+    @apply mb-1.5 block text-sm font-medium text-ink/80;
+  }
+}
