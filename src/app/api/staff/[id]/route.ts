@@ -4,7 +4,8 @@ import { requireRole } from "@/lib/auth";
 import { staffUpsertSchema } from "@/lib/validation";
 import { slugify } from "@/lib/utils";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const admin = await requireRole("ADMIN");
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -17,7 +18,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const { serviceIds, name, photoUrl, ...rest } = parsed.data;
 
   const staff = await prisma.staff.update({
-    where: { id: params.id },
+    where: { id: id },
     data: {
       ...rest,
       ...(name ? { name, slug: slugify(name) } : {}),
@@ -31,16 +32,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(staff);
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const admin = await requireRole("ADMIN");
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const bookingCount = await prisma.booking.count({ where: { staffId: params.id } });
+  const bookingCount = await prisma.booking.count({ where: { staffId: id } });
   if (bookingCount > 0) {
-    const staff = await prisma.staff.update({ where: { id: params.id }, data: { isActive: false } });
+    const staff = await prisma.staff.update({ where: { id: id }, data: { isActive: false } });
     return NextResponse.json({ deactivated: true, staff });
   }
 
-  await prisma.staff.delete({ where: { id: params.id } });
+  await prisma.staff.delete({ where: { id: id } });
   return NextResponse.json({ deleted: true });
 }

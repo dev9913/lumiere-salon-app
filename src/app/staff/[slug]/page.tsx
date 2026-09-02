@@ -6,10 +6,26 @@ import { formatPrice, formatDuration } from "@/lib/utils";
 
 export const revalidate = 60;
 
-export default async function StaffDetailPage({ params }: { params: { slug: string } }) {
+export default async function StaffDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
   const staff = await prisma.staff.findUnique({
-    where: { slug: params.slug },
-    include: { services: { include: { service: { include: { category: true } } } } },
+    where: { slug },
+    include: {
+      services: {
+        include: {
+          service: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!staff) notFound();
@@ -22,7 +38,15 @@ export default async function StaffDetailPage({ params }: { params: { slug: stri
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
         <div className="relative aspect-[4/5] w-full overflow-hidden bg-blush">
-          {staff.photoUrl && <Image src={staff.photoUrl} alt={staff.name} fill sizes="(min-width:1024px) 400px, 100vw" className="object-cover" />}
+          {staff.photoUrl && (
+            <Image
+              src={staff.photoUrl}
+              alt={staff.name}
+              fill
+              sizes="(min-width:1024px) 400px, 100vw"
+              className="object-cover"
+            />
+          )}
         </div>
 
         <div>
@@ -45,7 +69,8 @@ export default async function StaffDetailPage({ params }: { params: { slug: stri
                 >
                   <span>{service.name}</span>
                   <span className="text-ink/50">
-                    {formatDuration(service.durationMins)} · {formatPrice(service.priceCents)}
+                    {formatDuration(service.durationMins)} ·{" "}
+                    {formatPrice(service.priceCents)}
                   </span>
                 </Link>
               ))}
@@ -56,3 +81,5 @@ export default async function StaffDetailPage({ params }: { params: { slug: stri
     </div>
   );
 }
+
+

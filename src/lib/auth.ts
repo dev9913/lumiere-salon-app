@@ -35,11 +35,17 @@ export async function verifyPassword(password: string, hash: string) {
  */
 export async function createSession(userId: string, role: Role) {
   const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000
+  );
 
-  await prisma.session.create({ data: { token, userId, expiresAt } });
+  await prisma.session.create({
+    data: { token, userId, expiresAt },
+  });
 
-  cookies().set(cookieNameFor(role), token, {
+  const cookieStore = await cookies();
+
+  cookieStore.set(cookieNameFor(role), token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -53,15 +59,23 @@ export async function createSession(userId: string, role: Role) {
 /** Destroy the current session for the given role's cookie only. */
 export async function destroySession(role: Role = "CUSTOMER") {
   const cookieName = cookieNameFor(role);
-  const token = cookies().get(cookieName)?.value;
+  const cookieStore = await cookies();
+
+  const token = cookieStore.get(cookieName)?.value;
+
   if (token) {
-    await prisma.session.deleteMany({ where: { token } }).catch(() => null);
+    await prisma.session
+      .deleteMany({ where: { token } })
+      .catch(() => null);
   }
-  cookies().delete(cookieName);
+
+  cookieStore.delete(cookieName);
 }
 
 async function resolveSession(cookieName: string): Promise<User | null> {
-  const token = cookies().get(cookieName)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(cookieName)?.value;
+
   if (!token) return null;
 
   const session = await prisma.session.findUnique({
@@ -72,7 +86,10 @@ async function resolveSession(cookieName: string): Promise<User | null> {
   if (!session) return null;
 
   if (session.expiresAt < new Date()) {
-    await prisma.session.delete({ where: { id: session.id } }).catch(() => null);
+    await prisma.session
+      .delete({ where: { id: session.id } })
+      .catch(() => null);
+
     return null;
   }
 
@@ -87,13 +104,17 @@ export async function getCurrentUser(): Promise<User | null> {
 /** Resolve the current request's *admin* session, if any (verifies role). */
 export async function getCurrentAdmin(): Promise<User | null> {
   const user = await resolveSession(ADMIN_SESSION_COOKIE);
+
   if (!user || user.role !== "ADMIN") return null;
+
   return user;
 }
 
 /** Throws (as a redirect-friendly null) unless the current user has `role`. */
 export async function requireRole(role: Role): Promise<User | null> {
   if (role === "ADMIN") return getCurrentAdmin();
+
   const user = await getCurrentUser();
+
   return user && user.role === role ? user : null;
 }

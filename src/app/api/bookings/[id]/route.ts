@@ -3,12 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser, requireRole } from "@/lib/auth";
 import { bookingStatusSchema } from "@/lib/validation";
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const booking = await prisma.booking.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: { service: true, staff: true, customer: true },
   });
   if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -20,7 +21,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 /** Admin-only: move a booking through its status lifecycle. */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const admin = await requireRole("ADMIN");
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -31,7 +33,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const booking = await prisma.booking.update({
-    where: { id: params.id },
+    where: { id: id },
     data: { status: parsed.data.status },
   });
   return NextResponse.json(booking);

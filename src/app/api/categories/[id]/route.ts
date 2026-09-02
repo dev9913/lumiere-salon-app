@@ -4,7 +4,8 @@ import { requireRole } from "@/lib/auth";
 import { categoryUpsertSchema } from "@/lib/validation";
 import { slugify } from "@/lib/utils";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const admin = await requireRole("ADMIN");
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -16,17 +17,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   const { name, ...rest } = parsed.data;
   const category = await prisma.category.update({
-    where: { id: params.id },
+    where: { id: id },
     data: { ...rest, ...(name ? { name, slug: slugify(name) } : {}) },
   });
   return NextResponse.json(category);
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const admin = await requireRole("ADMIN");
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const serviceCount = await prisma.service.count({ where: { categoryId: params.id } });
+  const serviceCount = await prisma.service.count({ where: { categoryId: id } });
   if (serviceCount > 0) {
     return NextResponse.json(
       { error: "Move or delete this category's services before deleting it." },
@@ -34,6 +36,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     );
   }
 
-  await prisma.category.delete({ where: { id: params.id } });
+  await prisma.category.delete({ where: { id: id } });
   return NextResponse.json({ deleted: true });
 }

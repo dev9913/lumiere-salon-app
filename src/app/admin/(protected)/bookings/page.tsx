@@ -1,10 +1,16 @@
+
 import { prisma } from "@/lib/prisma";
 import BookingManager from "@/components/admin/BookingManager";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminBookingsPage({ searchParams }: { searchParams: { status?: string } }) {
-  const status = searchParams.status;
+export default async function AdminBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+
   const bookings = await prisma.booking.findMany({
     where: status ? { status: status as any } : {},
     include: { service: true, staff: true, customer: true },
@@ -15,7 +21,11 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
   return (
     <div>
       <h1 className="font-display text-3xl text-ink">Bookings</h1>
-      <p className="mt-2 text-sm text-ink/60">Move appointments through pending → confirmed → completed, or cancel them.</p>
+      <p className="mt-2 text-sm text-ink/60">
+        Move appointments through pending → confirmed → completed, or cancel
+        them.
+      </p>
+
       <div className="mt-8">
         <BookingManager
           activeStatus={status ?? "ALL"}
@@ -35,3 +45,5 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
     </div>
   );
 }
+
+

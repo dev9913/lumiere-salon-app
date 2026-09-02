@@ -1,3 +1,4 @@
+
 services:
   postgres:
     image: postgres:16
@@ -17,18 +18,33 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
-    build: .
-    container_name: lumiere-app
-    restart: unless-stopped
+  db-migrate:
+    build:
+      context: .
+      target: dbtools
+    container_name: lumiere-db-migrate
+    restart: "no"
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://salon_user:salon_pass@postgres:5432/salon_db?schema=public
+    command: ["npx", "prisma", "migrate", "deploy"]
+
+  app:
+    build:
+      context: .
+      target: runner
+    container_name: lumiere-app
+    restart: unless-stopped
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://salon_user:salon_pass@postgres:5432/salon_db?schema=public
       ADMIN_EMAIL: "admin@gmail.com"
-      ADMIN_PASSWORD: "admin@gmail.com"
-      SEED_DEMO_DATA: false
+      ADMIN_PASSWORD: "adminpass@"
+      SEED_DEMO_DATA: "false"
     ports:
       - "3000:3000"
     healthcheck:
@@ -39,3 +55,5 @@ services:
 
 volumes:
   lumiere_pgdata:
+
+
