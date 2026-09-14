@@ -10,21 +10,17 @@ metadata:
 spec:
   backoffLimit: 3
   ttlSecondsAfterFinished: 60
-
   template:
     spec:
       restartPolicy: Never
-
       containers:
         - name: db-migrate
-          image: dev7878/lumiere-salon-dbtools:latest
+          image: dev7878/lumiere-salon-dbtools:a9d8e174a54426a7d477a62cddf4f7d778fed7c9
           imagePullPolicy: Always
-
           command:
             - node_modules/.bin/prisma
             - migrate
             - deploy
-
           env:
             - name: DATABASE_URL
               valueFrom:
