@@ -92,7 +92,7 @@ jobs:
           output: 'trivy-report.txt'
 
       - name: Run Trivy vulnerability scan DBTOOL-IMAGE 
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_2 }}:${{ env.IMAGE_TAG }}
           format: 'table'
