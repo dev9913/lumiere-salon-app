@@ -1,0 +1,34 @@
+# ============================ Stage-1. Dependencies Install ================================
+
+FROM node:22-trixie-slim AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci 
+
+COPY prisma ./prisma
+
+RUN npx prisma generate
+
+# ============================ Stage-2. Production Setup ================================
+
+FROM node:22-trixie-slim
+
+RUN apt-get update && apt-get install -y --only-upgrade libssl3t64 openssl-provider-legacy \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
+COPY --from=builder /app/node_modules ./node_modules
+
+COPY --from=builder /app/prisma ./prisma
+
+COPY package.json ./
+
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
+CMD ["node", "node_modules/.bin/prisma", "--version"]

@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  namespace: salon-app
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 60
+
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: db-migrate
+          image: dev7878/lumiere-salon-dbtools:latest
+          imagePullPolicy: Always
+
+          command:
+            - node_modules/.bin/prisma
+            - migrate
+            - deploy
+
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: DATABASE_URL

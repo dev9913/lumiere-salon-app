@@ -1,0 +1,93 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: salon-app
+  namespace: salon-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: salon-app
+  template:
+    metadata:
+      labels:
+        app: salon-app
+    spec:
+      containers:
+        - name: salon-app
+          image: dev7878/lumiere-salon:latest 
+          imagePullPolicy: Always
+          env:
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: ADMIN_EMAIL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: ADMIN_PASSWORD
+            - name: SEED_DEMO_DATA
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: SEED_DEMO_DATA
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: DATABASE_URL
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: SESSION_SECRET
+            - name: SESSION_COOKIE_SECURE
+              value: "false"
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+  strategy:
+    canary:
+      stableService: salon-app-stable
+      canaryService: salon-app-canary
+      steps:
+        - setWeight: 25
+        - pause:
+            duration: 10s
+        - setWeight: 50
+        - pause:
+            duration: 10s
+        - setWeight: 75
+        - pause:
+            duration: 10s
+        - setWeight: 100

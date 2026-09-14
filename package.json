@@ -23,17 +23,24 @@
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "bcryptjs": "^2.4.3",
+    "brace-expansion": "2.1.4",
     "date-fns": "^3.6.0",
+    "ip-address": "10.3.1",
+    "mocker": "^0.1.2",
     "next": "^16.3.4",
+    "pacote": "21.5.1",
+    "picomatch": "4.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "server-only": "^0.0.1",
     "sharp": "^0.35.4",
+    "sigstore": "4.1.1",
+    "tar": "7.5.21",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20.14.0",
+    "@types/node": "^22.20.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
@@ -43,11 +50,6 @@
     "tsx": "^4.16.2",
     "typescript": "^5.5.2",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^3.2.7"
-  },
-  "overrides": {
-    "next": {
-      "postcss": "8.5.23"
-    }
+    "vitest": "^5.0.0"
   }
 }

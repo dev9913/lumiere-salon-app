@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-seed
+  namespace: salon-app
+
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: db-seed
+          image: dev7878/lumiere-salon-dbtools:latest
+          imagePullPolicy: Always
+          command:
+            - node_modules/.bin/prisma
+            - db
+            - seed
+
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: DATABASE_URL
+
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: ADMIN_EMAIL
+
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: ADMIN_PASSWORD
+
+            - name: SEED_DEMO_DATA
+              value: "false"
+

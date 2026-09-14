@@ -1,0 +1,25 @@
+# util-linux family — no fix available in Debian trixie yet, low risk for CLI-only image
+CVE-2026-76642
+CVE-2026-78408
+CVE-2026-78409
+CVE-2026-78410
+CVE-2026-3184
+CVE-2022-0563
+
+# perl-base — CLI image doesn't process untrusted Perl input
+CVE-2026-13221
+CVE-2026-42496
+CVE-2026-8376
+CVE-2026-42497
+CVE-2026-48962
+CVE-2026-57432
+CVE-2026-57433
+CVE-2026-9538
+
+# misc — no fix available
+CVE-2026-41992
+CVE-2026-54369
+CVE-2026-11822
+CVE-2026-11824
+CVE-2026-16742
+CVE-2025-69720

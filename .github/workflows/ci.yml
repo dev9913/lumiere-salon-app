@@ -62,7 +62,8 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       IMAGE_TAG: ${{ github.sha }}
-      IMAGE_NAME: lumiere-salon  
+      IMAGE_NAME: lumiere-salon
+      IMAGE_NAME_2: lumiere-salon-dbtools  
     steps:
       - name: Checkout the Code
         uses: actions/checkout@v4
@@ -74,34 +75,75 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}  
      
-      - name: Build The Image
+      - name: Build The Image SALON-APP
         run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG .
       
-    
+      - name: Build The Image DBTOOL
+        run: docker build -f Dockerfile.dbtools -t ${{ vars.DOCKERHUB_USERNAME }}/$IMAGE_NAME_2:$IMAGE_TAG .
+
       - name: Install Trivy
         uses: aquasecurity/setup-trivy@e07451d2e059ed86c2870430ea286b3a9e0bf241
         with:
           cache: true
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scan SALON-APP
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           format: 'table'
           exit-code: '1'
-          ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           output: 'trivy-report.txt'
-              
+
+      - name: Run Trivy vulnerability scan DBTOOL-IMAGE 
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_2 }}:${{ env.IMAGE_TAG }}
+          format: 'table'
+          exit-code: '1'   
+          severity: 'HIGH,CRITICAL'
+          trivyignores: '.trivyignore'
+          output: 'trivy-report-2.txt'   
+
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: trivy-report
-          path: trivy-report.txt
+          path: trivy-report*.txt
           if-no-files-found: error
 
-      - name: Docker PUSH
+      - name: Docker PUSH IMAGE SALON-APP
         if: success()
         run: docker push ${{ vars.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG
 
+      - name: Docker PUSH IMAGE 2 DBTOOLS
+        if: success()
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/$IMAGE_NAME_2:$IMAGE_TAG    
+
+# k8s-manifest-update in yaml file
+
+  k8s-manifest-update:
+    needs: build
+    runs-on: ubuntu-22.04
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout the Code
+        uses: actions/checkout@v4
+
+      - name: Install YQ
+        uses: mikefarah/yq@v4
+
+      - name: Update imagetag in k8s rollout manifest
+        run: |
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' rollout.yaml
+
+      - name: Update image tag in k8s migrate-job manifest
+        run: |
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' migrate-job.yaml
+
+      - name: Update imagetag in k8s seed-job manifest
+        run: |
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' seed-job.yaml
+     

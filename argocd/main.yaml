@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: salon-app
+  namespace: argocd
+spec:
+  project: salon-app
+  source:
+    repoURL: https://github.com/dev9913/lumiere-salon-app.git
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc 
+    namespace: salon-app
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true    
+   

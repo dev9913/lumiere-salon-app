@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: salon-ingress
+  namespace: salon-app
+
+spec:
+  ingressClassName: traefik
+
+  rules:
+    - host: salonapp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: salon-app-stable
+                port:
+                  number: 3000

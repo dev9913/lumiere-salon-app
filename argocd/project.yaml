@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: salon-app
+  namespace: argocd
+spec:
+  descriptions: "This Project for My Salon App ." 
+  sourceRepos:
+    - https://github.com/dev9913/lumiere-salon-app.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: salon-app
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: batch
+      kind: Job
+    - group: networking.k8s.io
+      kind: Ingress 
+    - group: apps
+      kind: StatefulSet
+    - group: argoproj.io 
+      kind: Rollout  
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler   
+
+  roles:
+    - name: developer
+      description: "Developer access."
+      policies:
+        - p, proj:salon-app:developer, applications, get, salon-app/*, allow
+        - p, proj:salon-app:developer, applications, sync, salon-app/*, allow
+
+    - name: salon-app-admin
+      description: "Application administrator."
+      policies:
+        - p, proj:salon-app:salon-app-admin, applications, *, salon-app/*, allow
+
+   
