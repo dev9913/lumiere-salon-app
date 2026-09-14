@@ -132,13 +132,13 @@ jobs:
 
       - name: Update imagetag in k8s rollout manifest
         run: |
-          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' rollout.yaml
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' k8s/rollout.yaml
 
       - name: Update image tag in k8s migrate-job manifest
         run: |
-          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' migrate-job.yaml
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' k8s/migrate-job.yaml
 
       - name: Update imagetag in k8s seed-job manifest
         run: |
-          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' seed-job.yaml
+          yq -ei '.spec.template.spec.containers[0].image |= sub(":.*", ":" + strenv(IMAGE_TAG))' k8s/seed-job.yaml
      
