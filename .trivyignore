@@ -5,6 +5,8 @@ CVE-2026-78409
 CVE-2026-78410
 CVE-2026-3184
 CVE-2022-0563
+CVE-2026-86145
+CVE-2026-89161
 
 # perl-base — CLI image doesn't process untrusted Perl input
 CVE-2026-13221
