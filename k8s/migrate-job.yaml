@@ -11,45 +11,13 @@ spec:
   backoffLimit: 3
   template:
     spec:
-      restartPolicy: Never
-      initContainers:
-        - name: wait-for-postgres
-          image: postgres:17
-          env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: salon-secrets
-                  key: POSTGRES_USER
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: salon-secrets
-                  key: POSTGRES_DB
-          command:
-            - sh
-            - -c
-            - |
-              echo "Waiting for PostgreSQL..."
-
-              until pg_isready \
-                -h postgres-svc \
-                -p 5432 \
-                -U "$POSTGRES_USER" \
-                -d "$POSTGRES_DB"
-              do
-                echo "PostgreSQL is not ready..."
-                sleep 2
-              done
-
-              echo "PostgreSQL is ready."
+      restartPolicy: Never 
       containers:
         - name: db-migrate
           image: dev7878/lumiere-salon-dbtools:latest
           imagePullPolicy: Always
           command:
-            - npx
-            - prisma
+            - node_modules/.bin/prisma
             - migrate
             - deploy
           env:
