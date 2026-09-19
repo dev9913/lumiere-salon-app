@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: salon-app
-          image: dev7878/lumiere-salon:6ee02700d57245484f5732aceba5524f74e8aaca
+          image: dev7878/lumiere-salon:3a5dde76cba634723d887bb51f9526fb1bd35a1d
           imagePullPolicy: Always
           env:
             - name: ADMIN_EMAIL
