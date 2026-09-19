@@ -52,7 +52,7 @@ spec:
 
       containers:
         - name: db-migrate
-          image: dev7878/salon-dbtools:1.0.0
+          image: dev7878/lumiere-salon-dbtools:latest
           imagePullPolicy: Always
 
           command:
