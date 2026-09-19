@@ -11,10 +11,10 @@ spec:
   backoffLimit: 3
   template:
     spec:
-      restartPolicy: Never 
+      restartPolicy: Never
       containers:
         - name: db-migrate
-          image: dev7878/lumiere-salon-dbtools:de4e0f53d10758bc938d115e0c70c6c95f1aba6a
+          image: dev7878/lumiere-salon-dbtools:292cd237d790cdf05cdd47ea352e7bf8b7e97740
           imagePullPolicy: Always
           command:
             - node_modules/.bin/prisma
