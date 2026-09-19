@@ -15,7 +15,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: db-migrate
-          image: dev7878/lumiere-salon-dbtools:a9d8e174a54426a7d477a62cddf4f7d778fed7c9
+          image: dev7878/lumiere-salon-dbtools:6ee02700d57245484f5732aceba5524f74e8aaca
           imagePullPolicy: Always
           command:
             - node_modules/.bin/prisma
