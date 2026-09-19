@@ -7,31 +7,25 @@ metadata:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
     argocd.argoproj.io/sync-wave: "-1"
-
 spec:
   backoffLimit: 3
-
   template:
     spec:
       restartPolicy: Never
-
       initContainers:
         - name: wait-for-postgres
           image: postgres:17
-
           env:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: salon-secrets
                   key: POSTGRES_USER
-
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: salon-secrets
                   key: POSTGRES_DB
-
           command:
             - sh
             - -c
@@ -49,18 +43,15 @@ spec:
               done
 
               echo "PostgreSQL is ready."
-
       containers:
         - name: db-migrate
           image: dev7878/lumiere-salon-dbtools:latest
           imagePullPolicy: Always
-
           command:
             - npx
             - prisma
             - migrate
             - deploy
-
           env:
             - name: DATABASE_URL
               valueFrom:
