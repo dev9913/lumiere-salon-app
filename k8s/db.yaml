@@ -9,22 +9,26 @@ metadata:
 spec:
   serviceName: postgres-svc
   replicas: 1
+
   selector:
     matchLabels:
       app: postgres
+
   template:
     metadata:
       labels:
         app: postgres
+
     spec:
       containers:
         - name: postgres
           image: postgres:17
+
           env:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: salon-secrets 
+                  name: salon-secrets
                   key: POSTGRES_USER
 
             - name: POSTGRES_PASSWORD
@@ -37,9 +41,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: salon-secrets
-                  key: POSTGRES_DB        
+                  key: POSTGRES_DB
+
           ports:
-            - containerPort: 5432 
+            - containerPort: 5432
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 30
+
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
@@ -54,7 +71,6 @@ spec:
           requests:
             storage: 1Gi
 
-
 ---
 
 apiVersion: v1
@@ -63,12 +79,14 @@ metadata:
   name: postgres-svc
   namespace: salon-app
   annotations:
-    argocd.argoproj.io/sync-wave: "-2"  
+    argocd.argoproj.io/sync-wave: "-2"
+
 spec:
   type: ClusterIP
+
   selector:
     app: postgres
+
   ports:
     - port: 5432
       targetPort: 5432
-

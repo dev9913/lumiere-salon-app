@@ -1,26 +1,66 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: db-migrate
+  generateName: db-migrate-
   namespace: salon-app
   annotations:
-    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
     argocd.argoproj.io/sync-wave: "-1"
+
 spec:
   backoffLimit: 3
-  ttlSecondsAfterFinished: 60
+
   template:
     spec:
       restartPolicy: Never
+
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: salon-secrets
+                  key: POSTGRES_DB
+
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+
+              until pg_isready \
+                -h postgres-svc \
+                -p 5432 \
+                -U "$POSTGRES_USER" \
+                -d "$POSTGRES_DB"
+              do
+                echo "PostgreSQL is not ready..."
+                sleep 2
+              done
+
+              echo "PostgreSQL is ready."
+
       containers:
         - name: db-migrate
-          image: dev7878/lumiere-salon-dbtools:6ee02700d57245484f5732aceba5524f74e8aaca
+          image: dev7878/salon-dbtools:1.0.0
           imagePullPolicy: Always
+
           command:
-            - node_modules/.bin/prisma
+            - npx
+            - prisma
             - migrate
             - deploy
+
           env:
             - name: DATABASE_URL
               valueFrom:
