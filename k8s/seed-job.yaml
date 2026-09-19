@@ -11,7 +11,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: db-seed
-          image: dev7878/lumiere-salon-dbtools:3a5dde76cba634723d887bb51f9526fb1bd35a1d
+          image: dev7878/lumiere-salon-dbtools:de4e0f53d10758bc938d115e0c70c6c95f1aba6a
           imagePullPolicy: Always
           command:
             - node_modules/.bin/prisma
